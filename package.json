@@ -1,0 +1,23 @@
+{
+  "name": "notes-workbench",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c \"#f59e0b,#0ea5e9\" \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "test": "npm run test -w backend",
+    "start": "npm run start -w backend",
+    "seed": "npm run seed -w backend",
+    "db:up": "COMPOSE_PROJECT_NAME=notesdesk docker compose up -d db",
+    "db:down": "COMPOSE_PROJECT_NAME=notesdesk docker compose stop db",
+    "compose:up": "COMPOSE_PROJECT_NAME=notesdesk docker compose up --build",
+    "compose:down": "COMPOSE_PROJECT_NAME=notesdesk docker compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

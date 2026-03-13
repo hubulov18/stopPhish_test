@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: notes_db
+          POSTGRES_USER: notes_user
+          POSTGRES_PASSWORD: notes_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U notes_user -d notes_db"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      NODE_ENV: test
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USERNAME: notes_user
+      DB_PASSWORD: notes_password
+      DB_NAME: notes_db
+      DB_LOGGING: "false"
+      SEED_ON_START: "false"
+      JWT_SECRET: ci-secret
+      JWT_EXPIRES_IN: 2h
+      PORT: 3310
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run backend integration tests
+        run: npm run test -w backend

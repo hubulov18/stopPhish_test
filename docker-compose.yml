@@ -1,0 +1,52 @@
+name: notesdesk
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: notes-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: notes_db
+      POSTGRES_USER: notes_user
+      POSTGRES_PASSWORD: notes_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - notes_pg_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: notes-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: notes_user
+      DB_PASSWORD: notes_password
+      DB_NAME: notes_db
+      DB_LOGGING: "false"
+      JWT_SECRET: compose-local-secret
+      JWT_EXPIRES_IN: 7d
+      SEED_ON_START: "true"
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: notes-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  notes_pg_data:
